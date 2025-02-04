@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Mike Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #303030; /* Grey background */
+            --chat-bg: #303030; /* Light grey background for chat */
+            --user-msg-bg: #40E0D0; /* Darker aqua */
+            --text-color: #ffffff;
+            --placeholder-color: #ffffff;
+            --header-bg: #303030; /* Darker aqua */
+            --header-color: #40E0D0;
+            --button-bg: #40E0D0; /* Darker aqua */
+            --button-hover-bg: #40E0D0;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color); /* Apply grey background to the whole body */
+        }
+        #chat-container {
+            width: 100%;
+            height: 100%;
+            background-color: var(--chat-bg); /* Light grey background for chat container */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #chat-header {
+            background-color: var(--header-bg);
+            color: var(--header-color);
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        #chat-header img {
+            width: 50px;
+            height: 50px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+        .message {
+            margin-bottom: 15px;
+            line-height: 1.4;
+            display: flex;
+            animation: fadeIn 0.5s;
+        }
+        .user-message {
+            justify-content: flex-end;
+        }
+        .bot-message {
+            justify-content: flex-start;
+        }
+        .message span {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 70%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message span {
+            background-color: var(--user-msg-bg);
+            color: #ffffff;
+        }
+        .bot-message span {
+            background-color: var(--bot-msg-bg);
+            color: var(--text-color);
+        }
+        #chat-input-container {
+            display: flex;
+            padding: 20px;
+            background-color: var(--chat-bg); /* Consistent background for input section */
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+        #user-input {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border: 2px solid var(--user-msg-bg);
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+            background-color: #464646;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        #user-input::placeholder {
+            color: var(--placeholder-color);
+        }
+        #user-input:focus {
+            box-shadow: 0 0 5px rgba(0, 139, 139, 0.5);
+        }
+        #send-button {
+            background-color: var(--button-bg);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            margin-left: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        #send-button:hover {
+            background-color: var(--button-hover-bg);
+            transform: scale(1.05);
+        }
+
+        /* Mobile-friendly design */
+        @media screen and (max-width: 768px) {
+            #chat-header {
+                padding: 10px;
+                font-size: 18px;
+            }
+            #chat-header img {
+                width: 40px;
+                height: 40px;
+            }
+            #chat-messages {
+                padding: 10px;
+            }
+            .message span {
+                padding: 10px 14px;
+                max-width: 85%;
+            }
+            #user-input {
+                padding: 10px;
+                font-size: 14px;
+            }
+            #send-button {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        /* Extra small devices (phones, 400px and smaller) */
+        @media screen and (max-width: 400px) {
+            #chat-header {
+                padding: 8px;
+                font-size: 16px;
+            }
+            #chat-header img {
+                width: 30px;
+                height: 30px;
+            }
+            #chat-messages {
+                padding: 8px;
+            }
+            .message span {
+                padding: 8px 12px;
+                max-width: 90%;
+            }
+            #user-input {
+                padding: 8px;
+                font-size: 12px;
+            }
+            #send-button {
+                padding: 8px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-header">
+            <a href="https://virtualmike.net/" target="_blank">
+                <img src="https://virtualmike.net/wp-content/uploads/2023/09/vectorpaint-2-1-768x282.png" alt="Virtual Mike Logo" style="width: 150px; height: auto;">
+            </a>
+            Virtual MIKE Chat Bot
+        </div>
+        <div id="chat-messages">
+            <div class="message bot-message">
+                <span>¡Bienvenido! Soy un asistente virtual especializado en leyes inmobiliarias españolas. ¿En qué puedo ayudarte hoy? Por favor, hazme cualquier pregunta sobre temas legales relacionados con bienes raíces en España.</span>
+            </div>
+        </div>
+        <div id="chat-input-container">
+            <input type="text" id="user-input" placeholder="Escribe tu mensaje...">
+            <button id="send-button" onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // Detect Enter key press and send message
+        $('#user-input').on('keypress', function(e) {
+            if (e.which == 13) {  // 13 is the Enter key code
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            var message = $('#user-input').val();
+            if (message.trim() === '') return;
+
+            $('#chat-messages').append('<div class="message user-message"><span>' + message + '</span></div>');
+            $('#user-input').val('');
+
+            $.ajax({
+                url: '/chat',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({message: message}),
+                success: function(response) {
+                    $('#chat-messages').append('<div class="message bot-message"><span>' + response.response + '</span></div>');
+                    $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
